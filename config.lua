@@ -31,11 +31,11 @@ config = {
             VisualDistance : المسافة المطلوبة لمشاهدة الفيديو
             StopBackground : خلفية توقف الشاشة
         ]]
-        LauncherWebsite = "https://Pars.github.io/Pars_cinema.github.io/",
+        LauncherWebsite = "https://itzturki3.github.io/itzturki3.github.io/",
         ObjectName = "v_ilev_cin_screen",
         TextureName = "script_rt_cinscreen",
-        Permission = "admin.revive",
-        TabletCommand = "PA",
+        Permission = "senmia.revive",
+        TabletCommand = "TCen",
         ControlDistance = 50.0,
         VisualDistance = 100.0,
         StopBackground = "",
@@ -69,9 +69,9 @@ config = {
             Color : لون اللوق
         ]]
         Enable = true,
-        Username = "Pars - Cinema",
+        Username = "Turki - Cinema",
         AvatarUrl = "https://media.discordapp.net/attachments/764915307000889374/940154833539829760/unknown.png",
-        WebhookUrl = "",
+        WebhookUrl = "https://discord.com/api/webhooks/1152018529705529374/rQyc6AbQBE0AWSEKyR15rUO8EC9iGRMqvudrsDc04RbmVlZJzELOS0S8PtdQIN8L3KVN",
         Color = 10682368,
     },
     Permissions = {}
