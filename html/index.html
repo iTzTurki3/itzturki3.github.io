@@ -1,0 +1,319 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <section class="tablet">
+        <section class="permission_list">
+            <section class="header">
+                <section class="text item">
+                    <h>الصلاحيات</h>
+                </section>
+                <section class="add item">
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                    <section class="text">
+                        <h>اضافة</h>
+                    </section>
+                </section>
+            </section>
+            <section class="list">
+                <ul></ul>
+            </section>
+            <section class="empty">
+                <h>لا توجد صلاحيات على هذه الشاشة</h>
+            </section>
+        </section>
+        <section class="dot"></section>
+        <section class="MainContainer">
+            <section class="inside">
+                <section class="title">
+                    <h>الشاشة:</h>
+                </section>
+                <section class="screens">
+                    <section class="select"><select></select></section>
+                    <section class="button remove">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </section>
+                </section>
+                <section class="title">
+                    <h>رابط اليوتيوب:</h>
+                </section>
+                <section class="input youtubeurl">
+                    <input type="text" placeholder="..." value="">
+                </section>
+                <section class="action">
+                    <section class="item">
+                        <section class="title">الصوت: </section>
+                        <section class="volume"><input type="range" min="0" max="100" value="70"></section>
+                        <section class="volume_value">%70</section>
+                    </section>
+                </section>
+            </section>
+            <section class="buttons">
+                <section class="btn-action" type="add">
+                    <section class="icon">
+                        <ion-icon name="add-outline"></ion-icon>
+                    </section>
+                    <section>اضافة</section>
+                </section>
+                <section class="btn-action" type="play">
+                    <section class="icon">
+                        <ion-icon name="play-outline"></ion-icon>
+                    </section>
+                    <section>تشغيل</section>
+                </section>
+                <section class="btn-action" type="pause">
+                    <section class="icon">
+                        <ion-icon name="pause-outline"></ion-icon>
+                    </section>
+                    <section>ايقاف</section>
+                </section>
+                <section class="btn-action" type="permission">
+                    <section class="icon">
+                        <ion-icon name="beaker-outline"></ion-icon>
+                    </section>
+                    <section>الصلاحيات</section>
+                </section>
+                <section class="btn-action" type="location">
+                    <section class="icon">
+                        <ion-icon name="location-outline"></ion-icon>
+                    </section>
+                    <section>الاحداثيات</section>
+                </section>
+            </section>
+        </section>
+    </section>
+    <script>
+        $(document).ready(function () {
+            $(window).on('message', function ($event) {
+                let item = event.data
+                switch (item.action) {
+                    case 'show_tablet':
+                        $(".permission_list").css("display", "none")
+                        $(".tablet select").empty()
+                        item.list.sort(function (a, b) {
+                            if (a.distance > b.distance) { return 1 }
+                            if (a.distance < b.distance) { return -1 }
+                            return 0
+                        })
+                        item.list.forEach(element => {
+                            $(".tablet select").append(`<option value="${element.id}">المالك: ${element.owner_id} | ${element.owner_name} - المسافة: ${Math.round(element.distance)} م</option>`)
+                        });
+                        $(".tablet").css("display", "block")
+                        break
+                }
+            })
+            $(document).keydown(function (event) {
+                if (event.keyCode == 27) {
+                    if ($(".permission_list").is(':visible')) {
+                        $(".permission_list").css("display", "none")
+                    } else {
+                        $(".tablet").css("display", "none")
+                        $.post("http://Pars_cinema/close")
+                    }
+                }
+            })
+            $(".btn-action").click(function () {
+                let type = $(this).attr('type')
+                switch (type) {
+                    case 'play':
+                        if ($('.tablet select option').length > 0) {
+                            let url = $(".tablet .youtubeurl input").val().trim()
+                            let id = $('.tablet select').find(":selected").attr('value').trim()
+                            let volume = $("input[type='range']").val()
+                            if (url != "" && id != "") {
+                                $.post("http://Pars_cinema/play", JSON.stringify({
+                                    url: url,
+                                    id: id,
+                                    volume: volume,
+                                }))
+                            } else {
+                                $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                    $(".tablet").removeClass("shake")
+                                })
+                            }
+                        } else {
+                            $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                $(".tablet").removeClass("shake")
+                            })
+                        }
+                        break
+                    case 'pause':
+                        if ($('.tablet select option').length > 0) {
+                            let id = $('.tablet select').find(":selected").attr('value').trim()
+                            if (id != "") {
+                                $.post("http://Pars_cinema/pause", JSON.stringify({
+                                    id: id,
+                                }))
+                            }
+                        } else {
+                            $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                $(".tablet").removeClass("shake")
+                            })
+                        }
+                        break
+                    case 'add':
+                        $(".tablet").css("display", "none")
+                        $.post("http://Pars_cinema/addNewScreen")
+                        break
+                    case 'permission':
+                        if ($('.tablet select option').length > 0) {
+                            let id = $('.tablet select').find(":selected").attr('value').trim()
+                            if (id != "") {
+                                $.post("http://Pars_cinema/getPermission", JSON.stringify({ id: id }), function (response) {
+                                    $(".permission_list ul").empty()
+                                    response.list.forEach((element) => {
+                                        $(".permission_list ul").append(`<li class="permission_item" player_id="${element.id}"><input type="checkbox" id="kingdomsc_permission_${element.id}" checked="true"><label for="kingdomsc_permission_${element.id}">${element.id} | ${element.username}</label></li>`)
+                                    })
+                                    if (response.list.length > 0) $(".permission_list .empty").css("display", "none")
+                                    else $(".permission_list .empty").css("display", "block")
+                                    $(".permission_list").css("display", "block")
+                                })
+                            }
+                        } else {
+                            $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                $(".tablet").removeClass("shake")
+                            })
+                        }
+                        break
+                    case 'location':
+                        if ($('.tablet select option').length > 0) {
+                            let id = $('.tablet select').find(":selected").attr('value').trim()
+                            if (id != "") {
+                                $.post("http://Pars_cinema/copyLocation", JSON.stringify({ id: id }), function (response) {
+                                    let te = document.createElement("textarea")
+                                    document.body.appendChild(te)
+                                    te.value = response.location
+                                    te.select()
+                                    document.execCommand("copy")
+                                    document.body.removeChild(te)
+                                })
+                            }
+                        } else {
+                            $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                $(".tablet").removeClass("shake")
+                            })
+                        }
+                        break
+                }
+            })
+            $(".permission_list .add").click(function () {
+                if ($('.tablet select option').length > 0) {
+                    let id = $('.tablet select').find(":selected").attr('value').trim()
+                    if (id != "") {
+                        $(".permission_list").css("display", "none")
+                        $.post("http://Pars_cinema/add_permission", JSON.stringify({
+                            id: id,
+                        }))
+                    } else {
+                        $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                            $(".tablet").removeClass("shake")
+                        })
+                    }
+                } else {
+                    $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                        $(".tablet").removeClass("shake")
+                    })
+                }
+            })
+            $(document).on('click', ".permission_list .permission_item", function () {
+                if ($('.tablet select option').length > 0) {
+                    let id = $('.tablet select').find(":selected").attr('value').trim()
+                    let player_id = $(this).attr('player_id')
+                    if (id != "") {
+                        new swal({
+                            title: `هل انت متأكد من ازالة الصلاحيات عن [${player_id}] ؟`,
+                            text: 'لن يستطيع اللاعب (تشغيل، ايقاف، حذف) الشاشة بعد ذلك',
+                            icon: 'question',
+                            iconHtml: '؟',
+                            showCancelButton: true,
+                            confirmButtonText: 'نعم',
+                            cancelButtonText: 'الغاء',
+                            confirmButtonColor: '#eb970e',
+                            reverseButtons: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $(this).remove()
+                                if ($(".permission_list .permission_item").length > 0) $(".permission_list .empty").css("display", "none")
+                                else $(".permission_list .empty").css("display", "block")
+                                $.post("http://Pars_cinema/removePermission", JSON.stringify({
+                                    id: id,
+                                    player_id: player_id,
+                                }))
+                            } else {
+                                $(this).find('input').prop('checked', 'true')
+                            }
+                        })
+                    } else {
+                        $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                            $(".tablet").removeClass("shake")
+                        })
+                    }
+                } else {
+                    $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                        $(".tablet").removeClass("shake")
+                    })
+                }
+            })
+            $(".screens .remove").click(function () {
+                if ($('.tablet select option').length > 0) {
+                    let id = $('.tablet select').find(":selected").attr('value').trim()
+                    if (id != "") {
+                        new swal({
+                            title: 'هل انت متأكد من حذف الشاشة؟',
+                            text: 'سيتم ايقاف الفيديو (ان وجد) وحذف الشاشة من جميع اللاعبين',
+                            icon: 'question',
+                            iconHtml: '؟',
+                            showCancelButton: true,
+                            confirmButtonText: 'نعم',
+                            cancelButtonText: 'الغاء',
+                            confirmButtonColor: '#eb970e',
+                            reverseButtons: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.post("http://Pars_cinema/remove", JSON.stringify({
+                                    id: id,
+                                }), function (data) {
+                                    if (data.state) {
+                                        $('.tablet select').find(":selected").remove()
+                                        $(".tablet .youtubeurl input").val('')
+                                    } else {
+                                        $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                                            $(".tablet").removeClass("shake")
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
+                } else {
+                    $(".tablet").addClass("shake").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function () {
+                        $(".tablet").removeClass("shake")
+                    })
+                }
+            })
+            $("input[type='range']").mousemove(function () {
+                $(".volume_value").text(`%${$(this).val()}`)
+            })
+            $("input[type='range']").mouseup(function () {
+                let volume = $(this).val()
+                $(".volume_value").text(`%${volume}`)
+                if ($('.tablet select option').length > 0) {
+                    let id = $('.tablet select').find(":selected").attr('value').trim()
+                    $.post("http://Pars_cinema/changeVolume", JSON.stringify({
+                        id: id,
+                        volume: volume,
+                    }))
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>
